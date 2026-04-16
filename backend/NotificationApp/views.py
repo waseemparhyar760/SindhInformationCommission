@@ -1,0 +1,10 @@
+from rest_framework import generics, permissions
+from .models import Notification
+from .serializers import NotificationSerializer
+
+class NotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Notification.objects.filter(is_active=True).order_by('-created_at')

@@ -1,0 +1,53 @@
+# Git Commands Cheat Sheet
+
+## 1. Configuration
+git config --global user.name "waseemparhyar760"      # Set your username
+git config --global user.email "waseemparhyar760@gmail.com"  # Set your email
+git config --list                              # List all configuration settings
+
+## 2. Starting a Project
+git init                                       # Initialize a new local repository
+git clone <url>                                # Clone a remote repository to your machine
+
+## 3. Basic Snapshotting (Daily Workflow)
+git status                                     # Check status of working directory
+git add .                                      # Add all changes to staging area
+git add <file>                                 # Add specific file to staging area
+git commit -m "Commit message"                 # Commit staged changes
+
+## 4. Branching & Merging
+git branch                                     # List local branches
+git branch <name>                              # Create a new branch
+git checkout <name>                            # Switch to a branch
+git switch <name>                              # Switch to a branch (modern alternative)
+git checkout -b <name>                         # Create and switch to a new branch
+git merge <branch>                             # Merge specified branch into current branch
+git branch -d <name>                           # Delete a branch
+
+## 5. Sharing & Updating Projects
+git remote add origin <url>                    # Add a remote repository
+git remote -v                                  # List remote repositories
+git push -u origin <branch>                    # Push changes to remote (first time for branch)
+git push                                       # Push changes to remote
+git pull                                       # Pull changes from remote and merge
+git fetch                                      # Fetch changes from remote without merging
+
+## 6. Inspection & Comparison
+git log                                        # View commit history
+git log --oneline                              # View condensed commit history
+git diff                                       # View unstaged changes
+git diff --staged                              # View staged changes
+
+## 7. Undoing Changes
+git restore <file>                             # Discard changes in working directory
+git restore --staged <file>                    # Unstage a file
+git reset --soft HEAD~1                        # Undo last commit, keep changes staged
+git reset --hard HEAD~1                        # Undo last commit, discard changes
+
+## 8. Stashing (Temporary Saves)
+git stash                                      # Stash changes (save temporarily)
+git stash pop                                  # Apply stashed changes and remove from stack
+git stash list                                 # List all stashes
+
+## 9. Common Push Sequence
+# git add .  ->  git commit -m "Message"  ->  git push

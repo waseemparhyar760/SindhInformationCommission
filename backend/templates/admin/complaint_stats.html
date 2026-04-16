@@ -1,0 +1,111 @@
+<div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- Pie Chart Module -->
+    <div class="module" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 15px; margin-bottom: 0;">
+        <h2 style="margin: 0 0 15px 0; font-size: 13px; color: #333; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px;">Complaint Filing Modes</h2>
+        <div style="position: relative; height: 200px; width: 100%;">
+            <canvas id="filingModeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Pending Approval -->
+    <div class="module" style="margin-bottom: 0;">
+        <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8f0; height: 100%;">
+            <caption style="background: #fff1f0; padding: 10px; text-align: left; font-weight: bold; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #d9534f;">⚠ Pending Approval (Unfocused)</caption>
+            {% for obj in pending_complaints %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-size: 12px;">
+                    <a href="/admin/complaint/complaint/{{ obj.id }}/change/" style="display: block; font-weight: bold; color: #333; margin-bottom: 2px;">{{ obj.full_name }}</a>
+                    <span style="color: #666; font-size: 11px;">Filed: {{ obj.created_at|date:"M d, Y" }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding: 15px; color: #999; font-size: 12px; text-align: center;">No pending complaints.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Next Hearings -->
+    <div class="module" style="margin-bottom: 0;">
+        <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8f0; height: 100%;">
+            <caption style="background: #f0f9ff; padding: 10px; text-align: left; font-weight: bold; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #0275d8;">📅 Next Hearings</caption>
+            {% for obj in next_hearings %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-size: 12px;">
+                    <a href="/admin/complaint/complaint/{{ obj.complaint.id }}/change/" style="display: block; font-weight: bold; color: #333; margin-bottom: 2px;">{{ obj.complaint.complaint_number|default:"Pending" }} - {{ obj.hearing_date|date:"M d" }}</a>
+                    <span style="color: #666; font-size: 11px;">{{ obj.hearing_time }} vs {{ obj.respondent_name|truncatechars:25 }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding: 15px; color: #999; font-size: 12px; text-align: center;">No upcoming hearings.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Stalled Proceedings -->
+    <div class="module" style="margin-bottom: 0;">
+        <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8f0; height: 100%;">
+            <caption style="background: #fffbf0; padding: 10px; text-align: left; font-weight: bold; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #d97706;">⏳ Stalled (>20 Days)</caption>
+            {% for obj in stalled_complaints %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-size: 12px;">
+                    <a href="/admin/complaint/complaint/{{ obj.id }}/change/" style="display: block; font-weight: bold; color: #333; margin-bottom: 2px;">{{ obj.complaint_number|default:"Pending" }}</a>
+                    <span style="color: #666; font-size: 11px;">Last Activity: {{ obj.last_hearing|default:obj.created_at|date:"M d, Y" }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding: 15px; color: #999; font-size: 12px; text-align: center;">No stalled proceedings.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- Past Hearings -->
+    <div class="module" style="margin-bottom: 0;">
+        <table style="width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8f0; height: 100%;">
+            <caption style="background: #f0fdf4; padding: 10px; text-align: left; font-weight: bold; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #059669;">History (Recent)</caption>
+            {% for obj in past_hearings %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-size: 12px;">
+                    <a href="/admin/complaint/complaint/{{ obj.complaint.id }}/change/" style="display: block; font-weight: bold; color: #333; margin-bottom: 2px;">{{ obj.hearing_date|date:"M d" }} - {{ obj.complaint.complaint_number|default:"Pending" }}</a>
+                    <span style="color: #666; font-size: 11px;">{{ obj.procedural_status|default:"No Status" }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding: 15px; color: #999; font-size: 12px; text-align: center;">No past hearings.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels-data" }}
+{{ chart_data|json_script:"chart-values-data" }}
+{{ chart_colors|json_script:"chart-colors-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+        const data = JSON.parse(document.getElementById('chart-values-data').textContent);
+        const colors = JSON.parse(document.getElementById('chart-colors-data').textContent);
+
+        var ctx = document.getElementById('filingModeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,37 @@
+{% load i18n %}
+{% load complaint_stats %}
+
+{% get_unapproved_complaint_count as unapproved_count %}
+
+{% if app_list %}
+  {% for app in app_list %}
+    <div class="app-{{ app.app_label }} module{% if app.app_url in request.path|urlencode %} current-app{% endif %}">
+      <table>
+        <caption>
+          <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+        </caption>
+        {% for model in app.models %}
+          <tr class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path|urlencode %} current-model{% endif %}">
+            {% if model.admin_url %}
+              <th scope="row">
+                <a href="{{ model.admin_url }}">
+                  {{ model.name }}
+                  {% if model.object_name == 'NewComplaint' and unapproved_count > 0 %}
+                    <span class="badge" style="background-color: #dc3545; color: white; padding: 2px 8px; font-size: 0.8rem; border-radius: 10px; margin-left: 6px; font-weight: 600;">{{ unapproved_count }}</span>
+                  {% endif %}
+                </a>
+              </th>
+            {% else %}
+              <th scope="row">{{ model.name }}</th>
+            {% endif %}
+
+            {% if model.add_url %}<td class="add-cell"><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td></td>{% endif %}
+            {% if model.admin_url and model.view_only %}<td class="view-cell"><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>{% elif model.admin_url %}<td class="change-cell"><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td></td>{% endif %}
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>{% trans 'You don’t have permission to view or edit anything.' %}</p>
+{% endif %}

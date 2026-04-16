@@ -1,0 +1,23 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+  <div id="content-main">
+    <div class="module" id="changelist-filter" style="padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; margin-bottom: 20px; border-radius: 8px;">
+      <h2 style="margin-top: 0; font-size: 1.2rem; color: #343a40;">Generate New Cause List</h2>
+      {% if unassigned_hearings_by_date %}
+        <p style="color: #6c757d;">The following dates have upcoming hearings not yet on an approved cause list. Click a date to create a new list with pre-filled hearings.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+          {% for item in unassigned_hearings_by_date %}
+            <a href="{% url 'admin:CauseList_causelist_add' %}?date={{ item.hearing_date|date:'Y-m-d' }}" class="button" style="background-color: #0d6efd; color: white; border: none; padding: 8px 12px; font-weight: bold; border-radius: 4px; text-decoration: none;">
+              {{ item.hearing_date|date:"D, d M Y" }} ({{ item.hearing_count }} hearing{{ item.hearing_count|pluralize }})
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: #6c757d;">No upcoming hearings are available to be scheduled.</p>
+      {% endif %}
+    </div>
+    {{ block.super }}
+  </div>
+{% endblock %}
